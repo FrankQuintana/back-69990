@@ -1,73 +1,67 @@
-import fs from 'fs';
+import {promises as fs} from 'fs';
 
 class CartManager {
-    #ruta = "./models/carts.json";
+    constructor(path) {
+        this.ultId = 0;
+        this.carts = [];
+        this.path = path;
 
-    constructor() {
-        this.path = this.#ruta;
-    }
+        this.chargCarts();
+    };
 
-    async createCart(){
-        let cart = {}
-        
-        if(fs.existsSync(this.path)){
-            let data = await fs.promises.readFile(this.path, 'utf-8')
-            let dataJS = JSON.parse(data)
-
-            cart.id = dataJS[dataJS.length - 1].id + 1
-            cart.products = []
-            dataJS.push(cart)
-
-            await fs.promises.writeFile(this.path, `${JSON.stringify(dataJS, null, 2)}`, 'utf-8')
-
-        }else{
-            cart.id = 1
-            cart.products = []
-            const arrC = [cart]
-
-            await fs.promises.writeFile(this.path, `${JSON.stringify(arrC, null, 2)}`, 'utf-8')
-        }
-    }
-
-    async uploadProduct(cid, pid){
+    async chargCarts() {
         try {
-            let data = await fs.promises.readFile(this.path, 'utf-8')
-            let dataJS = JSON.parse(data)
-            let carrito = dataJS[cid - 1]                                       
-            let idx = carrito.products.findIndex(product => product.id == pid)
-
-            if(idx !== -1){
-                let product = carrito.products[idx]
-
-                product.quantity++
-                carrito.products[idx] = product
-            }else{
-                let product = {}
-                product.id = pid
-                product.quantity = 1
-                carrito.products = [...carrito.products, product]
+            const data = await fs.readFile(this.path, "utf-8");
+            this.carts = JSON.parse(data);
+            if (this.carts.length > 0) {
+                this.ultId = Math.max(...this.carts.map(cart => cart.id));
             }
-
-            dataJS[cid - 1] = carrito
-
-            await fs.promises.writeFile(this.path, JSON.stringify(dataJS, null, 2), 'utf-8')
-
         } catch (error) {
-            console.log(error)
-        }
-    }
+            console.log("Error al cargar los carros desde el archivo", error);
+            await this.savCarts();
+        };
+    };
 
-    async getCartProducts(cid){
+    async savCarts() {
+        await fs.writeFile(this.path, JSON.stringify(this.carts, null, 2));
+    };
+
+    async createCart() {
+        const newCart = {
+            id: ++this.ultId,
+            products: []
+        };
+        this.carts.push(newCart);
+
+        await this.savCarts();
+        return newCart;
+    };
+
+    async getCartProducts(cid) {
         try {
-            let data = await fs.promises.readFile(this.path, 'utf-8')
-            let dataJS = JSON.parse(data)
-            let carrito = dataJS[cid -1]
-
-            return carrito.products
+            const cart = this.carts.find(c => c.id === cid);
+            if (!cart) {
+                throw new Error(`No existe carro con id: ${cid}`);
+            };
+            return cart;
         } catch (error) {
-            console.log(error)
-        }
-    }
-}
+            console.log("Error para obtener elcarro por id", error);
+            throw error;
+        };
+    };
+
+    async uploadProduct(cid, pid, quantity = 1) {
+       const cart = await this.getCartProducts(cid);
+       const productExist = cart.products.find(p => p.product === pid);
+       if (productExist) {
+            productExist.quantity += quantity;
+       } else {
+            cart.products.push({product: pid, quantity});
+       };
+
+       await this.savCarts();
+       return cart;
+    };
+};
 
 export default CartManager;

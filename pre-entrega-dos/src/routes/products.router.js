@@ -6,98 +6,67 @@ const productManager = new ProductManager("./src/models/products.json");
 
 //listar productos
 router.get('/', async (req, res)=>{
-    const {limit} = req.query
-
     try {
-        const data = await productManager.getProducts()
-        limit ? res.send(data.filter(product => product.id <= limit)) : res.send(data)
+        const {limit} = req.query.limit;
+        const products = await productManager.getProducts();
+        if (limit) {
+            res.json(products.slice(0, limit));
+        } else {
+            res.json(products);
+        };
     } catch (error) {
-        console.log(error)
-    }
-})
+        console.log("Error al obtetener productos", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 
 //traer producto por id
 router.get('/:pid', async (req, res)=>{
-    const {pid} = req.params
-
+    const {pid} = req.params;
     try {
-        const data = await productManager.getProducts()
-        pid ? res.send(data.find(product => product.id == pid)) : res.send(data)
+        const product = await productManager.getProductsById(parseInt(pid));
+        if (!product) {
+            return res.json({error: "Producto no encontrado"});
+        };
+        res.json(product)
     } catch (error) {
-        console.log(error)
-    }
-})
+        console.log("Error al obtetener productos", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 //agregar nuevo producto
 router.post('/',async (req, res)=>{
-    const   
-        {
-            title,
-            description,
-            code,
-            price,
-            status,
-            stock,
-            category,
-            thumbnail
-        } = req.body
-            
-    if (title == undefined || description == undefined || code == undefined || price == undefined || status == undefined || stock == undefined || category == undefined) {
-        res.send({aviso: "datos invalidos"})
-    }else{
-        try {
-            await productManager.addProduct(title, description, price, thumbnail, code, stock, status, category)
-            res.send({aviso: "producto agregado"})
-        } catch (error) {
-            console.log(error)
-        }
-    }
-})
+    const newProduct = req.body;
+    try {
+        await productManager.addProduct(newProduct);
+        res.status(201).json({messaje: "Producto agregado exitosamente"});
+    } catch (error) {
+        console.log("Error al agregar productos", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 //actualizar por id
 router.put('/:pid',async (req, res)=>{
     const {pid} = req.params
-    const   
-        {
-            title,
-            description,
-            code,
-            price,
-            status,
-            stock,
-            category,
-            thumbnail
-        } = req.body
-
-    if (title == undefined || description == undefined || code == undefined || price == undefined || status == undefined || stock == undefined || category == undefined) {
-        res.send({mensaje: "datos invalidos"})
-    }else{
-        let  obj =  {
-                        title,
-                        description,
-                        code,
-                        price,
-                        status,
-                        stock,
-                        category,
-                        thumbnail
-                    }
-        try {
-            await productManager.updateProduct(pid, obj)
-            res.send({aviso: "producto actualizado"})
-        } catch (error) {
-            console.log(error)
-        }
-    }
-})
+    const productUpdate = req.body;
+    try {
+        await productManager.updateProduct(parseInt(pid), productUpdate);
+        res.json({messaje: "Producto actualizado exitosamente"});
+    } catch (error) {
+        console.log("Error al actualizar productos", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 //eliminar producto
 router.delete('/:pid',async (req, res)=>{
-    const {pid} = req.params
-    
+    const {pid} = req.params;
     try {
-        await productManager.deleteProduct(pid)
-        res.send({aviso: "producto eliminado"})
+        await productManager.deleteProduct(parseInt(pid));
+        res.send({messaje: "producto eliminado exitosamente"});
     } catch (error) {
-        console.log(error)
-    }
-})
+        console.log("Error al eliminar productos", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 
 export default router;

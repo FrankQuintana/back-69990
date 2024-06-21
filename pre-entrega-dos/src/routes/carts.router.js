@@ -1,54 +1,42 @@
 import Router from "express";
-import ProductManager from "../controllers/productManager.js";
-import CartManager from "../controllers/cartManager.js"
+import CartManager from "../controllers/cartManager.js";
 
-const router = Router()
+const router = Router();
+const cartManager = new CartManager("./src/models/carts.json");
 
-const productManager = new ProductManager
-const cartManager = new CartManager
-
-
+//crear carrito nuevo
 router.post('/', async (req, res) => {
-    await cartManager.createCart()
-    res.send({mensaje: "carrito creado"})
-})
-
+    try {
+        const newCart = await cartManager.createCart();
+        res.json(newCart);
+    } catch (error) {
+        console.log("Error al crear carrito", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
+//lista productos carros
 router.get('/:cid', async (req, res) => {
-    const { cid } = req.params
-    
+    const { cid } = req.params;
     try {
-        let arrPC = []
-        const cartProducts = await cartManager.getCartProducts(cid)
-    
-        await cartProducts.forEach(async (element) => {
-            try {
-                let product = await productManager.getProductById(element.id)
-
-                product.quantity = element.quantity
-                arrPC = [...arrPC, product]
-
-                if(cartProducts.length == arrPC.length) {
-                    res.status(200).json(arrPC);
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        })
+        const cart = await cartManager.getCartProducts(cid);
+        res.json(cart.products);
     } catch (error) {
-        console.log(error)
-    }
-    
-})
-
+        console.log("Error al obteber carrito", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
+//agregar productos carro
 router.post('/:cid/product/:pid', async (req, res) => {
-    const { cid, pid } = req.params
+    const { cid, pid } = req.params;
+    const quantity = req.params.quantity || 1;
 
     try {
-        await cartManager.uploadProduct(cid, pid)
-        res.send({mensaje: "producto agregado al carrito"})
+        const updateCar = await cartManager.uploadProduct(cid, pid, quantity);
+        res.json(updateCar.products);
     } catch (error) {
-        console.log(error)
-    }
-})
+        console.log("Error al agregar productos al carrito", error);
+        res.status(500).json({error: "Error del servidor"});
+    };
+});
 
 export default router;
