@@ -1,11 +1,11 @@
 import fs from 'fs';
 
 export class CartManager {
-    #ruta = './src/carts.json'
+    #ruta = "./src/carts.json";
     constructor(){
-        this.path = this.#ruta
+        this.path = this.#ruta;
     }
-
+    //crear carrito
     async createCart(){
         let cart = {}
         
@@ -27,7 +27,7 @@ export class CartManager {
             await fs.promises.writeFile(this.path, `${JSON.stringify(arrC, null, 2)}`, 'utf-8')
         }
     }
-
+    //actualizar carrito
     async uploadProduct(cid, pid){
         try {
             let data = await fs.promises.readFile(this.path, 'utf-8')
@@ -60,7 +60,7 @@ export class CartManager {
         try {
             let data = await fs.promises.readFile(this.path, 'utf-8')
             let dataJS = JSON.parse(data)
-            let carrito = dataJS[cid -1]
+            let carrito = dataJS[cid - 1]
 
             return carrito.products
         } catch (error) {
@@ -68,3 +68,5 @@ export class CartManager {
         }
     }
 }
+
+export default CartManager;

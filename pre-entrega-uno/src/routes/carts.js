@@ -1,22 +1,33 @@
-import { Router } from "express"
-import { ProductManager } from "../ProductManager.js"
-import { CartManager } from "../cartManager.js"
+import  Router  from "express"
+//import  ProductManager  from "../ProductManager.js"
+import  CartManager  from "../cartManager.js"
 
 const router = Router()
+//const productManager = new ProductManager
+const cartManager = new CartManager;
 
-const productManager = new ProductManager
-const cartManager = new CartManager
-
-
+//crear carro
 router.post('/', async (req, res) => {
-    await cartManager.createCart()
-    res.send({mensaje: "carrito creado"})
+    try {
+        await cartManager.createCart()
+        res.send({mensaje: "carrito creado"})
+    } catch (error) {
+        console.error("Error al crear carrito", error);
+        res.status(500).json({ error: "Error del servidor" });
+    }
+    
 })
-
+//lista de productos en determinado carro
 router.get('/:cid', async (req, res) => {
     const { cid } = req.params
-    
     try {
+        const cartProducts = await cartManager.getCartProducts(cid);
+        res.json(cartProducts.products)
+    } catch (error) {
+        console.error("Error al obtener el carrito", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+    /*try {
         let arrPC = []
         const cartProducts = await cartManager.getCartProducts(cid)
     
@@ -36,10 +47,10 @@ router.get('/:cid', async (req, res) => {
         })
     } catch (error) {
         console.log(error)
-    }
+    }*/
     
 })
-
+//agregar productos a otros carros
 router.post('/:cid/product/:pid', async (req, res) => {
     const { cid, pid } = req.params
 
@@ -51,4 +62,4 @@ router.post('/:cid/product/:pid', async (req, res) => {
     }
 })
 
-export default router
+export default router;
