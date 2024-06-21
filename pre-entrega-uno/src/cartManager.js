@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 export class CartManager {
-    #ruta = "./src/carts.json";
+    #ruta = "./src/models/carts.json";
     constructor(){
         this.path = this.#ruta;
     }
