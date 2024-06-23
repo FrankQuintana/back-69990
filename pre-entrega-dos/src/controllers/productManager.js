@@ -1,4 +1,4 @@
-import {promises as fs} from 'fs';
+import { promises as fs } from 'fs';
 
 class ProductManager {
     static ultId = 0;
@@ -70,8 +70,8 @@ class ProductManager {
 
     async readFiles() {
         try {
-            const res = await fs.readFile(this.path, "utf-8");
-            const arrProducts = JSON.parse(res);
+            const resp = await fs.readFile(this.path, "utf-8");
+            const arrProducts = JSON.parse(resp);
             return arrProducts;
         } catch (error) {
             console.log("Error al leer archivo", error);

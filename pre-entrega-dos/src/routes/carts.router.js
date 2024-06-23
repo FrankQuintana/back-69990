@@ -1,11 +1,11 @@
-import Router from "express";
+import express from "express";
 import CartManager from "../controllers/cartManager.js";
 
-const router = Router();
+const router = express.Router();
 const cartManager = new CartManager("./src/models/carts.json");
 
 //crear carrito nuevo
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     try {
         const newCart = await cartManager.createCart();
         res.json(newCart);
@@ -15,8 +15,8 @@ router.post('/', async (req, res) => {
     };
 });
 //lista productos carros
-router.get('/:cid', async (req, res) => {
-    const { cid } = req.params;
+router.get("/:cid", async (req, res) => {
+    const cid = parseInt(req.params.cid);
     try {
         const cart = await cartManager.getCartProducts(cid);
         res.json(cart.products);
@@ -26,8 +26,9 @@ router.get('/:cid', async (req, res) => {
     };
 });
 //agregar productos carro
-router.post('/:cid/product/:pid', async (req, res) => {
-    const { cid, pid } = req.params;
+router.post("/:cid/product/:pid", async (req, res) => {
+    const cid = parseInt(req.params.cid);
+    const pid = req.params.pid;
     const quantity = req.params.quantity || 1;
 
     try {
