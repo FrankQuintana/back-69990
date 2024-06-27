@@ -48,4 +48,4 @@ const addProduct = () => {
         category: document.getElementById("category").value
     };
     socket.emit("addProduct", product);
-}
+};

@@ -24,17 +24,11 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/", viewsRouter);
 
-//server arriba
-// app.listen(PORT, (err) => {
-//     if(err) console.log(err);
-//     console.log(`Servidor http://localhost:${PORT} en linea`);
-// });
 const httpServer = app.listen(PORT, (err) => {
     if(err) console.log(err);
     console.log(`Servidor http://localhost:${PORT} en linea`);
 });
 
-//---------------------------------//
 const productManager = new ProductManager("./src/models/products.json");
 
 const io = new Server(httpServer);
